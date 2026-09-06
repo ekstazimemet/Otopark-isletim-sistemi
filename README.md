@@ -23,6 +23,54 @@ Bu sistem; fiziksel kamera görüntüsünden araç plakalarını yapay görme te
 
 ---
 
+## ⚡ 1 Dakikada Hızlı Kurulum & Çalıştırma (Quickstart)
+
+Projeyi bilgisayarınızda hemen ayağa kaldırmak için aşağıdaki 2 yöntemden birini kullanabilirsiniz:
+
+### 🚀 Yöntem A: Tek Tıkla Otomatik Başlatma (Windows)
+1. Bilgisayarınızda **Python 3.10 veya üzeri** kurulu olduğundan emin olun (*Kurulum yaparken `Add python.exe to PATH` kutucuğunu mutlaka işaretleyin*).
+2. *(İsteğe Bağlı)* Gerçek e-posta ve makbuz bildirimi göndermek isterseniz `.env.example` dosyasını `.env` olarak kopyalayıp Gmail bilgilerinizi yazabilirsiniz.  
+   > 💡 **Not:** E-posta bilgisi tanımlamasanız dahi sistem durmaz; doğrulama kodları (OTP) ve makbuzlar terminal konsoluna anlık basılarak testleri hemen yapmanızı sağlar.
+3. Proje klasöründeki **`baslat.bat`** dosyasına **çift tıklayın!**
+   * Bilgisayarınızda eksik kütüphaneleri `requirements.txt` üzerinden **otomatik yükler**.
+   * Web tarayıcısını 2 saniye içinde açarak sistemi kullanıma hazır hale getirir.
+
+---
+
+### 💻 Yöntem B: Terminal ile Manuel Kurulum (Mac / Linux / Windows)
+
+```bash
+# 1. Projeyi klonlayın ve klasöre girin
+git clone https://github.com/KULLANICI_ADINIZ/ParkOS.git
+cd ParkOS
+
+# 2. Sanal ortamı (virtualenv) oluşturun ve aktif edin
+python -m venv venv
+# Windows için:
+venv\Scripts\activate
+# macOS / Linux için:
+source venv/bin/activate
+
+# 3. Gerekli kütüphaneleri yükleyin
+pip install -r requirements.txt
+
+# 4. (İsteğe Bağlı) E-posta SMTP ayarlarını yapın
+cp .env.example .env
+
+# 5. ParkOS'u başlatın
+python main.py
+```
+
+---
+
+### 🌐 Hızlı Erişim Linkleri
+Sistem açıldıktan sonra tarayıcınızdan:
+* 🖥️ **Yönetici Kontrol Paneli:** [http://localhost:8000](http://localhost:8000)
+* 📱 **Müşteri & Ödeme Portalı:** [http://localhost:8000/musteri](http://localhost:8000/musteri)
+* 📚 **Canlı API Dokümantasyonu (Swagger):** [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
 ## 🌟 Öne Çıkan Yetenekler & Mimari Özellikler
 
 ### 1. 👁️ Gerçek Zamanlı Plaka Algılama (Computer Vision & ALPR)
@@ -122,51 +170,6 @@ PlakaProjesi/
     ├── test_excel.py                   # Excel senkronizasyon testi
     └── test_system.py                  # Çekirdek sistem testi
 ```
-
----
-
-## 🚀 Hızlı Başlangıç & Kurulum
-
-### Yöntem 1: Tek Tıkla Başlatma (Windows)
-Proje klasöründeki **`baslat.bat`** dosyasına çift tıklayın.
-* Bilgisayarınızda Python olup olmadığını kontrol eder.
-* Eksik kütüphaneleri `requirements.txt` dosyasından **otomatik kurar**.
-* Web tarayıcısını açarak sistemi hazır hale getirir.
-
----
-
-### Yöntem 2: Manuel Kurulum
-
-1. **Depoyu Klonlayın:**
-   ```bash
-   git clone https://github.com/KULLANICI_ADINIZ/ParkOS.git
-   cd ParkOS
-   ```
-
-2. **Sanal Ortam Oluşturun ve Aktif Edin:**
-   ```bash
-   python -m venv venv
-   # Windows için:
-   venv\Scripts\activate
-   # macOS/Linux için:
-   source venv/bin/activate
-   ```
-
-3. **Bağımlılıkları Yükleyin:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Çevre Değişkenlerini Ayarlayın:**
-   `.env.example` dosyasını `.env` olarak kopyalayın ve SMTP bilgilerinizi tanımlayın:
-   ```bash
-   cp .env.example .env
-   ```
-
-5. **Sistemi Başlatın:**
-   ```bash
-   python main.py
-   ```
 
 ---
 
