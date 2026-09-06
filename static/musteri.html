@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#090d16" />
+  <title>ParkOS - Müşteri Portalı</title>
+
+  <!-- Modern Fontlar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/static/musteri.css" />
+</head>
+<body>
+  <div class="portal-container">
+
+    <!-- Üst Bar -->
+    <header class="portal-header">
+      <div class="header-brand">
+        <div class="brand-icon">🅿️</div>
+        <div>
+          <h1 class="brand-title">ParkOS <span style="font-size: 11px; font-weight: 700; color: #a78bfa; background: rgba(167, 139, 250, 0.15); padding: 2px 7px; border-radius: 6px; letter-spacing: 1px; vertical-align: middle;">MÜŞTERİ</span></h1>
+          <p class="brand-sub">Akıllı Otopark & Online Ödeme Portalı</p>
+        </div>
+      </div>
+      <div id="cikisYapKonteyner" style="display: none;">
+        <button id="cikisYapBtn" class="btn-logout" title="Oturumu Kapat">🚪 Çıkış</button>
+      </div>
+    </header>
+
+    <!-- CANLI PARK YERİ & KAPASİTE BİLGİ ŞERİDİ -->
+    <div id="musteriKapasiteBanner" class="kapasite-live-bar" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 10px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(8px);">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span id="musteriLiveDot" class="live-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 8px #10b981;"></span>
+        <span style="font-size: 13px; font-weight: 600; color: #f8fafc;">🅿️ Canlı Park Durumu:</span>
+      </div>
+      <div style="font-size: 13px; color: #cbd5e1;">
+        <span id="musteriBosToplam" style="font-weight: 700; color: #38bdf8;">15 / 15 Boş</span>
+        <span style="color: #64748b; margin: 0 4px;">•</span>
+        <span id="musteriBosDetay" style="font-size: 12px; color: #94a3b8;">Abonmansız: 10 | Abonmanlı: 5</span>
+      </div>
+    </div>
+
+    <!-- 1. GÖRÜNÜM: GİRİŞ & KAYIT EKRANI -->
+    <section id="authSection" class="auth-section">
+      <div class="auth-card">
+        
+        <!-- Sekmeler -->
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" data-auth-tab="tab-giris">Giriş Yap</button>
+          <button class="auth-tab-btn" data-auth-tab="tab-kayit">İlk Kayıt</button>
+          <button class="auth-tab-btn" data-auth-tab="tab-abonman" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(217, 70, 239, 0.2)); color: #c4b5fd; font-weight: 700;">⭐ Abonman Al</button>
+        </div>
+
+        <!-- Giriş Formu (Sadece Plaka) -->
+        <div class="auth-tab-content active" id="tab-giris">
+          <p class="auth-desc">Kayıtlı aracınızın plakasını girin, e-postanıza doğrulama kodu gönderelim:</p>
+          <div class="form-group">
+            <label>Araç Plakası</label>
+            <input type="text" id="girisPlakaInput" placeholder="Örn: 34 ABC 123" maxlength="12" class="plate-input" />
+          </div>
+          <button id="girisKodGonderBtn" class="btn btn-primary w-100">
+            📩 Doğrulama Kodu Gönder
+          </button>
+        </div>
+
+        <!-- Kayıt Formu (Plaka + E-posta) -->
+        <div class="auth-tab-content" id="tab-kayit">
+          <p class="auth-desc">Plakanızı ve e-posta adresinizi kaydederek doğrulama kodu alın:</p>
+          <div class="form-group">
+            <label>Araç Plakası</label>
+            <input type="text" id="kayitPlakaInput" placeholder="Örn: 34 ABC 123" maxlength="12" class="plate-input" />
+          </div>
+          <div class="form-group">
+            <label>E-Posta Adresi</label>
+            <input type="email" id="kayitEmailInput" placeholder="ornek@mail.com" />
+          </div>
+          <button id="kayitKodGonderBtn" class="btn btn-primary w-100">
+            ✉️ Kaydol & Doğrulama Kodu Al
+          </button>
+        </div>
+
+        <!-- 3. Sekme: Doğrudan Abonman Satın Alma Formu -->
+        <div class="auth-tab-content" id="tab-abonman">
+          <p class="auth-desc" style="color: #cbd5e1;">
+            Otoparka istediğiniz zaman girip çıkın; abonman süreniz boyunca <strong>0.00 TL</strong> ile beklemesiz geçiş sağlayın:
+          </p>
+          <div class="form-group">
+            <label>Araç Plakası</label>
+            <input type="text" id="directAbnPlakaInput" placeholder="Örn: 34 ABC 123" maxlength="12" class="plate-input" />
+          </div>
+          <div class="form-group">
+            <label>E-Posta Adresi (Onay Makbuzu İçin)</label>
+            <input type="email" id="directAbnEmailInput" placeholder="ornek@mail.com" />
+          </div>
+
+          <!-- Paket Seçici -->
+          <div class="packages-grid" style="margin: 12px 0;">
+            <div class="package-card" id="directPkgHaftalik" onclick="secDirectPaket('haftalik', 250, 'Haftalık Abonman')">
+              <div class="package-name">Haftalık Paket</div>
+              <div class="package-days">7 Gün Sınırsız</div>
+              <div class="package-price">250 ₺</div>
+            </div>
+            <div class="package-card selected" id="directPkgAylik" onclick="secDirectPaket('aylik', 750, 'Aylık Abonman')">
+              <span class="package-badge-tag">%40 TASARRUF</span>
+              <div class="package-name">Aylık Abonman</div>
+              <div class="package-days">30 Gün Sınırsız</div>
+              <div class="package-price">750 ₺</div>
+            </div>
+          </div>
+
+          <div class="payment-summary" style="margin-bottom: 12px;">
+            <span id="directSecilenPaketAdi">Aylık Abonman:</span>
+            <strong id="directSecilenTutar" style="color: #a78bfa;">750.00 ₺</strong>
+          </div>
+
+          <!-- Kart Giriş Alanı -->
+          <div class="form-group">
+            <label>Kart Sahibi</label>
+            <input type="text" id="directHolderInput" placeholder="Ad Soyad" required value="Ahmet Yılmaz" />
+          </div>
+          <div class="form-group">
+            <label>Kart Numarası (Test İçin Hazır)</label>
+            <input type="text" id="directCardInput" placeholder="4543 1234 5678 9012" maxlength="19" required value="4543 9876 5432 1098" />
+          </div>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label>Son Kullanma</label>
+              <input type="text" id="directExpInput" placeholder="AA/YY" maxlength="5" required value="08/29" />
+            </div>
+            <div class="form-group flex-1">
+              <label>CVV</label>
+              <input type="password" id="directCvvInput" placeholder="•••" maxlength="3" required value="456" />
+            </div>
+          </div>
+
+          <button id="directAbnSatinAlBtn" class="btn w-100 mt-2" onclick="directAbonmanSatinAl()" style="background: linear-gradient(135deg, #8b5cf6, #d946ef); color: white; font-weight: bold; padding: 13px; font-size: 14px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
+            ⭐ Abonmanı Satın Al ve Başlat (750.00 ₺)
+          </button>
+        </div>
+
+      </div>
+
+      <div class="auth-footer-hint">
+        🛡️ Şifre gerektirmez. Güvenli tek kullanımlık e-posta kodu (OTP) ile hızlı giriş yapılır.
+      </div>
+    </section>
+
+    <!-- 2. GÖRÜNÜM: MÜŞTERİ DASHBOARD (ARAÇ BİLGİSİ & CANLI BORÇ) -->
+    <main id="dashboardSection" class="dashboard-section" style="display: none;">
+      
+      <!-- Hoş Geldiniz & Plaka Kartı -->
+      <div class="customer-info-card">
+        <div class="customer-left">
+          <div class="plaka-badge">
+            <div class="plaka-tr"><span>TR</span></div>
+            <div class="plaka-text" id="dashPlakaText">34 --- --</div>
+          </div>
+          <div class="customer-meta">
+            <div class="customer-email" id="dashEmailText">kullanici@mail.com</div>
+            <div class="active-tarife-tag" id="dashTarifeText">⚡ 5 sn = 1.00 ₺</div>
+          </div>
+        </div>
+        <div class="status-pill-box">
+          <span class="status-pill" id="dashDurumPill">Kontrol ediliyor...</span>
+          <div id="dashVipBadgeBox" style="display: none; margin-top: 6px;">
+            <span class="vip-badge-glow">⭐ ABONMANLI</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Abonman Aktif Bilgilendirme Kartı -->
+      <div class="abonman-vip-card" id="dashAbonmanCard" style="display: none;">
+        <div class="abonman-vip-header">
+          <div class="abonman-vip-title">
+            <span>⭐</span> <strong id="vipPaketAdi">Aylık Abonman</strong>
+          </div>
+          <span class="vip-badge-glow" id="vipKalanGunBadge">30 Gün Kaldı</span>
+        </div>
+        <div class="abonman-vip-details">
+          <div>Geçerlilik: <strong id="vipBitisTarihi">--.--.----</strong></div>
+          <div style="color: #4ade80; font-weight: bold;">0.00 TL Ücretsiz Geçiş</div>
+        </div>
+      </div>
+
+      <!-- Akıllı Pazarlama Teklif Bannerı (Sık Gelenlere Özel) -->
+      <div class="promo-banner" id="dashPromoBanner" style="display: none;">
+        <div class="promo-text-wrap">
+          <span class="promo-tag">🎯 SİZE ÖZEL AKILLI TEKLİF</span>
+          <div class="promo-heading" id="promoBaslik">Aylık Abonmanla %40 Tasarruf Edin!</div>
+          <div class="promo-desc" id="promoAciklama">Sık ziyaretleriniz için en avantajlı abonman fırsatını yakalayın.</div>
+        </div>
+        <button class="btn-promo-action" id="promoInceleBtn" onclick="acAbonmanModal()">
+          Teklifi İncele
+        </button>
+      </div>
+
+      <!-- Abonman Satın Al Butonu / Barı -->
+      <div id="abonmanAlBar" style="display: flex; justify-content: flex-end;">
+        <button class="btn btn-primary" onclick="acAbonmanModal()" style="font-size: 12px; padding: 8px 16px; background: linear-gradient(135deg, #8b5cf6, #3b82f6);">
+          ⭐ Abonman Paketi Al / Uzat
+        </button>
+      </div>
+
+      <!-- Canlı Durum ve Borç Kartı -->
+      <div class="live-status-card" id="liveCard">
+        
+        <div class="status-indicator-row">
+          <div class="pulse-dot" id="dashPulseDot"></div>
+          <h3 id="dashDurumBaslik">Aracınız Otoparkta</h3>
+        </div>
+
+        <div class="metrics-container">
+          <div class="metric-box">
+            <span class="m-label">Giriş Saati</span>
+            <span class="m-val text-muted" id="dashGirisSaati">--:--:--</span>
+          </div>
+          <div class="metric-box">
+            <span class="m-label">İçeride Kalınan Süre</span>
+            <span class="m-val text-blue" id="dashSureText">0 sn</span>
+          </div>
+        </div>
+
+        <!-- Ücret / Borç Kutusu -->
+        <div class="price-action-box">
+          <div class="price-detail">
+            <span class="price-title">Toplam Biriken Ücret</span>
+            <div class="price-amount" id="dashUcretText">0.00 ₺</div>
+          </div>
+
+          <div id="odemeDurumAlani">
+            <button id="odemeYapModalBtn" class="btn btn-pay">
+              💳 Online Öde
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Otoparkta Değil Bilgi Kartı -->
+      <div class="empty-park-card" id="emptyParkCard" style="display: none;">
+        <div class="empty-car-icon">🚗💨</div>
+        <h3>Aracınız Şu An Otoparkta Değil</h3>
+        <p>Otoparka giriş yaptığınızda kameramız plakanızı otomatik tanıyacak ve canlı süreniz burada başlayacaktır.</p>
+      </div>
+
+    </main>
+
+    <!-- DOĞRULAMA KODU (OTP) MODALI -->
+    <div id="otpModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>E-Posta Doğrulama</h3>
+          <button class="modal-close" id="closeOtpModal">&times;</button>
+        </div>
+        <div class="modal-body text-center">
+          <div class="otp-mail-icon">📩</div>
+          <p class="otp-instruction" id="otpInstructionText">
+            Doğrulama kodunuz <strong>m***@gmail.com</strong> adresine gönderildi.
+          </p>
+
+          <!-- Test Kolaylığı İçin Geliştirici Rozeti -->
+          <div class="test-code-box" id="testCodeBox" style="display: none;">
+            <span class="test-code-badge">TEST KODU:</span>
+            <strong id="testCodeVal">123456</strong>
+            <button class="copy-btn" onclick="koduDoldur()">Kodu Doldur</button>
+          </div>
+
+          <div class="otp-input-group">
+            <input type="text" id="otpCodeInput" placeholder="123456" maxlength="6" class="otp-input" />
+          </div>
+
+          <div class="timer-row">
+            <span>Kod geçerlilik süresi:</span>
+            <strong id="otpTimerText">05:00</strong>
+          </div>
+
+          <button id="otpOnaylaBtn" class="btn btn-primary w-100 mt-3">
+            ✅ Kodu Doğrula ve Devam Et
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SANAL KREDİ KARTI İLE ÖDEME MODALI -->
+    <div id="odemeModal" class="modal">
+      <div class="modal-content payment-modal">
+        <div class="modal-header">
+          <h3>Online Otopark Ödemesi</h3>
+          <button class="modal-close" id="closeOdemeModal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          
+          <!-- Sanal Kredi Kartı Görseli -->
+          <div class="credit-card-ui">
+            <div class="card-top">
+              <span class="chip-icon">💳</span>
+              <span class="card-type">OtoparkPay</span>
+            </div>
+            <div class="card-number-preview" id="cardNumPreview">•••• •••• •••• ••••</div>
+            <div class="card-bottom">
+              <div>
+                <div class="card-holder-label">KART SAHİBİ</div>
+                <div class="card-holder-name" id="cardNamePreview">AD SOYAD</div>
+              </div>
+              <div>
+                <div class="card-holder-label">SKT</div>
+                <div class="card-expiry-val" id="cardExpPreview">12/28</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ödeme Tutarı Özeti -->
+          <div class="payment-summary">
+            <span>Ödenecek Tutar:</span>
+            <strong id="payModalAmount">0.00 ₺</strong>
+          </div>
+
+          <!-- Kart Giriş Formu -->
+          <form id="paymentForm" onsubmit="event.preventDefault(); onlineOdemeTamamla();">
+            <div class="form-group">
+              <label>Kart Sahibi</label>
+              <input type="text" id="payHolderInput" placeholder="Ad Soyad" required value="Ahmet Yılmaz" />
+            </div>
+
+            <div class="form-group">
+              <label>Kart Numarası (Test İçin Otomatik Dolduruldu)</label>
+              <input type="text" id="payCardInput" placeholder="4543 1234 5678 9012" maxlength="19" required value="4543 1234 5678 9012" />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label>Son Kullanma</label>
+                <input type="text" id="payExpInput" placeholder="AA/YY" maxlength="5" required value="12/28" />
+              </div>
+              <div class="form-group flex-1">
+                <label>CVV</label>
+                <input type="password" id="payCvvInput" placeholder="•••" maxlength="3" required value="321" />
+              </div>
+            </div>
+
+            <button type="submit" id="paySubmitBtn" class="btn btn-green w-100 mt-2">
+              🔒 Güvenli Ödemeyi Tamamla
+            </button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ABONMAN SATIN ALMA MODALI -->
+    <div id="abonmanModal" class="modal">
+      <div class="modal-content payment-modal">
+        <div class="modal-header">
+          <h3>🌟 Abonman Paketi Satın Al</h3>
+          <button class="modal-close" id="closeAbonmanModal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 12px;">
+            Abonman süreniz boyunca otopark giriş ve çıkışlarınızda <strong>0.00 TL</strong> ücret yansır ve bariyer otomatik açılır.
+          </p>
+
+          <!-- Paket Seçici -->
+          <div class="packages-grid">
+            <div class="package-card" id="pkgHaftalik" onclick="secPaket('haftalik', 250, 'Haftalık Abonman')">
+              <div class="package-name">Haftalık Paket</div>
+              <div class="package-days">7 Gün Sınırsız</div>
+              <div class="package-price">250 ₺</div>
+            </div>
+            <div class="package-card selected" id="pkgAylik" onclick="secPaket('aylik', 750, 'Aylık Abonman')">
+              <span class="package-badge-tag">%40 TASARRUF</span>
+              <div class="package-name">Aylık Abonman</div>
+              <div class="package-days">30 Gün Sınırsız</div>
+              <div class="package-price">750 ₺</div>
+            </div>
+          </div>
+
+          <!-- Seçilen Tutar Özeti -->
+          <div class="payment-summary">
+            <span id="abonmanSecilenPaketAdi">Aylık Abonman:</span>
+            <strong id="abonmanSecilenTutar" style="color: #a78bfa;">750.00 ₺</strong>
+          </div>
+
+          <!-- Kart Giriş Formu -->
+          <form id="abonmanPaymentForm" onsubmit="event.preventDefault(); abonmanSatinAlTamamla();">
+            <div class="form-group">
+              <label>Kart Sahibi</label>
+              <input type="text" id="abnHolderInput" placeholder="Ad Soyad" required value="Ahmet Yılmaz" />
+            </div>
+
+            <div class="form-group">
+              <label>Kart Numarası (Test İçin Hazır)</label>
+              <input type="text" id="abnCardInput" placeholder="4543 1234 5678 9012" maxlength="19" required value="4543 9876 5432 1098" />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label>Son Kullanma</label>
+                <input type="text" id="abnExpInput" placeholder="AA/YY" maxlength="5" required value="08/29" />
+              </div>
+              <div class="form-group flex-1">
+                <label>CVV</label>
+                <input type="password" id="abnCvvInput" placeholder="•••" maxlength="3" required value="456" />
+              </div>
+            </div>
+
+            <button type="submit" id="abnSubmitBtn" class="btn w-100 mt-2" style="background: linear-gradient(135deg, #8b5cf6, #d946ef); color: white; font-weight: bold; padding: 12px;">
+              ⭐ Abonmanı Aktif Et ve Öde
+            </button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ÖDEME BAŞARILI MAKBUZ MODALI -->
+    <div id="makbuzModal" class="modal">
+      <div class="modal-content receipt-modal">
+        <div class="receipt-icon">🎉</div>
+        <h2>Ödeme Başarılı!</h2>
+        <p class="receipt-sub">Otopark ücretiniz tahsil edilmiştir. Çıkışta bariyer otomatik açılacaktır.</p>
+
+        <div class="receipt-box">
+          <div class="receipt-row">
+            <span>Makbuz No:</span>
+            <strong id="receiptNo">MAK-0000</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Plaka:</span>
+            <strong id="receiptPlaka">34 --- --</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Ödenen Tutar:</span>
+            <strong class="receipt-amount" id="receiptTutar">0.00 ₺</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Ödeme Şekli:</span>
+            <span id="receiptYontem">Kredi Kartı</span>
+          </div>
+          <div class="receipt-row">
+            <span>Tarih:</span>
+            <span id="receiptTarih">--:--</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary w-100 mt-3" onclick="kapatMakbuz()">
+          Tamam
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast Bildirimleri -->
+    <div id="toastContainer" class="toast-container"></div>
+
+  </div>
+
+  <script src="/static/musteri.js"></script>
+</body>
+</html>

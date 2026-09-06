@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0d1117" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>ParkOS - Yönetici Kontrol Paneli</title>
+  
+  <!-- Modern Fontlar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Üst Header Bar -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-icon">🅿️</div>
+        <div>
+          <h1 class="app-title">ParkOS <span style="font-size: 11px; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.15); padding: 2px 7px; border-radius: 6px; letter-spacing: 1px; vertical-align: middle;">ADMIN</span></h1>
+          <div class="status-badge" id="connectionStatus">
+            <span class="status-dot"></span>
+            <span class="status-text">Bağlanıyor...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <a href="/musteri" target="_blank" class="icon-btn" title="Müşteri Portalı (Ödeme & Takip)" style="text-decoration: none;">👤</a>
+        <button id="audioToggleBtn" class="icon-btn" title="Sesli Bildirim">
+          <span id="audioIcon">🔔</span>
+        </button>
+        <button id="qrBtn" class="icon-btn" title="Mobil Bağlantı QR">
+          <span>📲</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Bilgi / Tarife Şeridi -->
+    <div class="tarife-banner">
+      <span class="tarife-badge">⚡ AKTİF TARİFE</span>
+      <span class="tarife-text" id="topTarifeText">Her <strong>5 Saniyede 1.00 ₺</strong></span>
+    </div>
+
+    <!-- İstatistik Kartları Grid -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">İçerideki Araç</div>
+        <div class="stat-value text-blue" id="statIceride">0</div>
+        <div class="stat-sub">Aktif Park Eden</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Anlık Kasa</div>
+        <div class="stat-value text-amber" id="statAnlikKasa">0 ₺</div>
+        <div class="stat-sub">İçeride Biriken</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tahsil Edilen</div>
+        <div class="stat-value text-emerald" id="statToplamGelir">0 ₺</div>
+        <div class="stat-sub" id="statCikanSayisi">0 Çıkış</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">🅿️ Boş Park Yeri</div>
+        <div class="stat-value text-purple" id="statBosYer">15 / 15</div>
+        <div class="stat-sub" id="statBosYerDetay">Abonmansız: 10 | Abonmanlı: 5</div>
+      </div>
+    </section>
+
+    <!-- Sekme Navigasyonu -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="tab-iceride">
+        🚗 İçeridekiler (<span id="tabCountIceride">0</span>)
+      </button>
+      <button class="tab-btn" data-tab="tab-gecmis">
+        📜 Çıkış Geçmişi
+      </button>
+      <button class="tab-btn" data-tab="tab-pazarlama">
+        🎯 Pazarlama & Abonmanlar
+      </button>
+      <button class="tab-btn" data-tab="tab-manuel">
+        ⚙️ Hızlı İşlem
+      </button>
+    </nav>
+
+    <!-- Sekme 1: İçerideki Araçlar (Canlı Kartlar) -->
+    <main class="tab-content active" id="tab-iceride">
+      <div class="section-header">
+        <h2>Otoparktaki Araçlar</h2>
+        <span class="live-pulse">CANLI AKIYOR</span>
+      </div>
+
+      <div id="aracListesi" class="arac-grid">
+        <!-- JavaScript ile dinamik kartlar doldurulacak -->
+      </div>
+
+      <div id="bosListe" class="empty-state">
+        <div class="empty-icon">🚗💨</div>
+        <h3>Şu An İçeride Araç Yok</h3>
+        <p>Kamera bir plaka algıladığında araç otomatik burada belirecektir.</p>
+      </div>
+    </main>
+
+    <!-- Sekme 2: Çıkış Geçmişi -->
+    <section class="tab-content" id="tab-gecmis">
+      <div class="section-header">
+        <h2>Tamamlanan Parklar</h2>
+        <div style="display: flex; gap: 6px;">
+          <a href="/api/excel-indir" download="otopark_kayitlari.xlsx" class="action-sm-btn excel-btn" title="Excel Dosyasını İndir">📊 Excel İndir</a>
+          <button id="yenileGecmisBtn" class="action-sm-btn">🔄 Yenile</button>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Plaka</th>
+              <th>Giriş</th>
+              <th>Çıkış</th>
+              <th>Süre</th>
+              <th>Ücret</th>
+            </tr>
+          </thead>
+          <tbody id="gecmisTableBody">
+            <!-- Geçmiş verileri -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Sekme 3: Pazarlama & Abonman Yönetimi -->
+    <section class="tab-content" id="tab-pazarlama">
+      
+      <!-- 1. Aktif Abonman Müşterileri -->
+      <div class="section-header">
+        <div>
+          <h2>🌟 Aktif Abonman Müşterileri</h2>
+          <p style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
+            Abonman sahipleri otoparktan 0.00 TL ile ücretsiz ve beklemesiz geçer.
+          </p>
+        </div>
+        <button onclick="loadAbonmanlar()" class="action-sm-btn">🔄 Yenile</button>
+      </div>
+
+      <div class="table-responsive" style="margin-bottom: 30px;">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Plaka</th>
+              <th>Müşteri / E-Posta</th>
+              <th>Paket Türü</th>
+              <th>Başlangıç</th>
+              <th>Bitiş</th>
+              <th>Kalan Gün</th>
+              <th>Ayrıcalık</th>
+            </tr>
+          </thead>
+          <tbody id="abonmanTableBody">
+            <!-- Abonman verileri JS ile doldurulacak -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 2. Akıllı Pazarlama Öneri Algoritması -->
+      <div class="section-header">
+        <div>
+          <h2>🎯 Akıllı Pazarlama & Kampanya Önerileri</h2>
+          <p style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
+            Otopark geçmişini analiz eden akıllı algoritmamız, sık gelen plakaları tespit ederek tasarruf analizi çıkarır ve tek tıkla e-posta teklifi atar.
+          </p>
+        </div>
+        <button onclick="loadPazarlamaAdaylari()" class="action-sm-btn" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6); color: white;">
+          🔍 Analizi Çalıştır
+        </button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Aday Plaka</th>
+              <th>Kayıtlı E-Posta</th>
+              <th>Ziyaret / Harcama</th>
+              <th>Önerilen Paket</th>
+              <th>Tahmini Tasarruf</th>
+              <th>Eylem</th>
+            </tr>
+          </thead>
+          <tbody id="pazarlamaTableBody">
+            <!-- Pazarlama adayları JS ile doldurulacak -->
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- Sekme 4: Manuel İşlem / Test & Tarife Ayarı -->
+    <section class="tab-content" id="tab-manuel">
+      
+      <!-- HIZLI SIFIRLAMA KARTI (TEST MODU) -->
+      <div class="test-sifirla-card">
+        <div class="test-sifirla-left">
+          <div class="test-icon">🧪</div>
+          <div>
+            <h3 class="test-title">Hızlı Test Sıfırlama</h3>
+            <p class="test-desc">İçerideki araçları, kasayı ve Excel'i tek tıkla anında sıfırlar.</p>
+          </div>
+        </div>
+        <button id="hizliSifirlaBtn" class="btn-quick-reset" onclick="tekTiklaSifirla()">
+          🧹 Sistemi Sıfırla
+        </button>
+      </div>
+
+      <!-- FİYAT TARİFESİ AYARLARI -->
+      <div class="manuel-card tarife-card">
+        <div class="tarife-card-header">
+          <div>
+            <h3>💰 Fiyat Tarifesi Ayarı</h3>
+            <p class="manuel-desc">Ücretlendirme kuralını anlık olarak buradan değiştirebilirsiniz:</p>
+          </div>
+          <span class="active-tarife-pill" id="aktifTarifePill">5 sn = 1.00 ₺</span>
+        </div>
+
+        <!-- Hızlı Hazır Butonlar -->
+        <div class="hizli-tarife-row">
+          <button class="tarife-preset-btn" onclick="hizliTarifeAyarla(5, 1.0)">⚡ 5 sn = 1 ₺</button>
+          <button class="tarife-preset-btn" onclick="hizliTarifeAyarla(10, 2.0)">⏱️ 10 sn = 2 ₺</button>
+          <button class="tarife-preset-btn" onclick="hizliTarifeAyarla(30, 5.0)">🚗 30 sn = 5 ₺</button>
+          <button class="tarife-preset-btn" onclick="hizliTarifeAyarla(60, 10.0)">🏢 1 dk = 10 ₺</button>
+        </div>
+
+        <!-- Özel Giriş -->
+        <div class="custom-tarife-form">
+          <div class="tarife-input-pair">
+            <div class="input-field">
+              <label>Süre (Saniye)</label>
+              <input type="number" id="tarifeSaniyeInput" min="1" max="86400" value="5" />
+            </div>
+            <div class="input-divider">=</div>
+            <div class="input-field">
+              <label>Ücret (TL)</label>
+              <input type="number" id="tarifeUcretInput" min="0.1" step="0.5" value="1.0" />
+            </div>
+          </div>
+          <button id="tarifeKaydetBtn" class="btn btn-primary">💾 Yeni Tarifeyi Uygula</button>
+        </div>
+      </div>
+
+      <!-- OTOPARK KAPASİTE & PARK YERİ AYARLARI -->
+      <div class="manuel-card tarife-card" style="margin-top: 14px;">
+        <div class="tarife-card-header">
+          <div>
+            <h3>🅿️ Otopark Kapasite & Park Yeri Ayarı</h3>
+            <p class="manuel-desc">Normal ve abonman park yeri sayılarını buradan anlık olarak değiştirebilirsiniz:</p>
+          </div>
+          <span class="active-tarife-pill" id="aktifKapasitePill" style="background: rgba(139, 92, 246, 0.2); color: #c4b5fd; border-color: rgba(139, 92, 246, 0.4);">Toplam: 15 Yer</span>
+        </div>
+
+        <!-- Hızlı Kapasite Preset Butonları -->
+        <div class="hizli-tarife-row">
+          <button class="tarife-preset-btn" onclick="hizliKapasiteAyarla(1, 1)">⚡ Test Modu (1 Standart + 1 Abonmanlı)</button>
+          <button class="tarife-preset-btn" onclick="hizliKapasiteAyarla(10, 5)">🚗 Standart (10 Standart + 5 Abonmanlı)</button>
+          <button class="tarife-preset-btn" onclick="hizliKapasiteAyarla(30, 10)">🏢 Büyük (30 Standart + 10 Abonmanlı)</button>
+        </div>
+
+        <!-- Özel Kapasite Formu -->
+        <div class="custom-tarife-form">
+          <div class="tarife-input-pair">
+            <div class="input-field">
+              <label>Abonmansız (Standart) Yer</label>
+              <input type="number" id="kapasiteNormalInput" min="0" max="500" value="10" />
+            </div>
+            <div class="input-divider">+</div>
+            <div class="input-field">
+              <label>Abonmanlı Park Yeri</label>
+              <input type="number" id="kapasiteAbonmanInput" min="0" max="500" value="5" />
+            </div>
+          </div>
+          <button id="kapasiteKaydetBtn" onclick="kapasiteKaydet()" class="btn btn-primary" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6);">
+            💾 Kapasiteyi Güncelle
+          </button>
+        </div>
+      </div>
+
+      <!-- MANUEL PLAKA GİRİŞ / ÇIKIŞ -->
+      <div class="manuel-card" style="margin-top: 14px;">
+        <h3>🚗 Manuel Plaka Giriş / Çıkış Simülatörü</h3>
+        <p class="manuel-desc">Kameranız olmadan sistemi doğrudan telefonunuzdan test edebilirsiniz:</p>
+        
+        <div class="input-group">
+          <input type="text" id="manuelPlakaInput" placeholder="Örn: 34 ABC 789" maxlength="12" />
+          <div class="btn-row">
+            <button id="manuelGirisBtn" class="btn btn-green">Giriş Yap</button>
+            <button id="manuelCikisBtn" class="btn btn-red">Çıkış Yap</button>
+          </div>
+        </div>
+
+        <div class="hizli-plakalar">
+          <span class="hizli-label">Örnek Plakalar:</span>
+          <button class="chip" onclick="hizliPlakaSec('34 ABC 123')">34 ABC 123</button>
+          <button class="chip" onclick="hizliPlakaSec('06 ANK 06')">06 ANK 06</button>
+          <button class="chip" onclick="hizliPlakaSec('35 IZM 35')">35 IZM 35</button>
+        </div>
+
+      <!-- EXCEL RAPORU VE SENKRONİZASYON -->
+      <div class="manuel-card" style="margin-top: 14px; background: linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(20, 83, 45, 0.2)); border-color: rgba(34, 197, 94, 0.3);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <h3 style="display: flex; align-items: center; gap: 8px;">📊 Excel Raporu</h3>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: #86efac;">otopark_kayitlari.xlsx</span>
+        </div>
+        <p class="manuel-desc">Tüm araç giriş-çıkışları, süre ve ödenen ücretler anlık Excel'e kaydedilir. Dosyayı silseniz bile sistem otomatik olarak eksiksiz yeniden oluşturur.</p>
+        
+        <div class="btn-row">
+          <a href="/api/excel-indir" download="otopark_kayitlari.xlsx" class="btn btn-green text-center" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            📥 Excel'i İndir
+          </a>
+          <button id="excelSenkronizeBtn" class="btn btn-primary" style="background: #0284c7;">
+            🔄 Yeniden Senkronize Et
+          </button>
+        </div>
+      </div>
+
+      <!-- TEHLİKELİ BÖLGE -->
+      <div class="danger-zone" style="margin-top: 14px;">
+        <button id="sifirlaBtn" class="btn btn-outline-danger">⚠️ Tüm Verileri Sıfırla</button>
+      </div>
+    </section>
+
+    <!-- QR Kod Modal -->
+    <div id="qrModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Telefondan Bağlan</h3>
+          <button class="modal-close" id="closeQrModal">&times;</button>
+        </div>
+        <div class="modal-body text-center">
+          <p>Aynı Wi-Fi ağındaki telefonunuzun kamerasıyla bu QR kodu okutun:</p>
+          <div id="qrContainer" class="qr-box"></div>
+          <p class="url-text" id="mobilUrlText">http://...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bildirim Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+  </div>
+
+  <!-- QR Kod JS Kütüphanesi -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

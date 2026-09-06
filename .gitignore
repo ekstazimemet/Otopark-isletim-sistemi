@@ -1,0 +1,19 @@
+# Çevre Değişkenleri & Şifreler
+.env
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Sanal Ortam (Virtualenv)
+venv/
+env/
+.venv/
+
+# IDE Ayarları
+.vscode/
+.idea/
+
+# Log ve Geçici Dosyalar
+*.log
